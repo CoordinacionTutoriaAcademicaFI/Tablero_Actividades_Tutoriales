@@ -137,6 +137,22 @@ details.acordeon-desc[open] summary::after { transform: rotate(180deg); }
     .ruta-visual { flex-direction: column; align-items: flex-start; gap: 4px;}
     .ruta-flecha { display: none; }
 }
+/* ESTILO PARA EL AVISO DE TEAMS */
+.aviso-teams {
+    background-color: #e3f2fd;
+    border-left: 5px solid #0078d4;
+    color: #004578;
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    font-size: 15px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.aviso-teams .icono { font-size: 28px; }
+.aviso-teams strong { color: #0078d4; font-size: 16px; }
 </style>
 </head>
 <body>
@@ -150,7 +166,14 @@ details.acordeon-desc[open] summary::after { transform: rotate(180deg); }
 </header>
 
 <main>
-
+        <!-- AVISO IMPORTANTE TEAMS -->
+    <div class="aviso-teams">
+        <div class="icono">💬</div>
+        <div>
+            <strong>¡Atención importante!</strong><br>
+            Se le recuerda revisar constantemente su chat de MS Teams. Las personas tutoradas están enviando mensajes por ese medio en todo momento y para diferentes actividades. Es importante brindar seguimiento oportuno a través de esa plataforma.
+        </div>
+    </div>
     <div class="barra-progreso-wrapper">
         <div class="progreso-header">
             <span class="progreso-titulo">Avance Global de Actividades</span>
