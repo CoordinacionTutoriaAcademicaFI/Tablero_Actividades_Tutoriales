@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tablero de Actividades Tutoriales</title>
+<style>
+:root {
+    --verde: #006B45;
+    --verde-oscuro: #004D32;
+    --fondo: #f5f7f6;
+    --texto: #26332d;
+    --gris: #68756e;
+    --borde: #e1e8e3;
+    --blanco: #ffffff;
+    --ambar: #c28b27;
+    --ambar-osc: #6b4a0c;
+    --ambar-bg: #fff9ed;
+    --exito-bg: #e7f4ee;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, Helvetica, sans-serif; background: var(--fondo); color: var(--texto); line-height: 1.6; }
+
+header { background: var(--verde-oscuro); color: white; padding: 24px 20px; }
+.header-content { max-width: 900px; margin: auto; }
+.institucion { font-size: 12px; letter-spacing: 1px; opacity: .85; margin-bottom: 6px; }
+header h1 { font-size: 24px; margin-bottom: 4px; }
+header p { font-size: 14px; opacity: .9; }
+
+main { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+
+/* BARRA DE PROGRESO GLOBAL */
+.barra-progreso-wrapper { background: white; border-radius: 10px; padding: 20px; margin-bottom: 25px; border: 1px solid var(--borde); box-shadow: 0 2px 10px rgba(0,0,0,.03); }
+.progreso-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.progreso-titulo { font-weight: bold; color: var(--verde-oscuro); }
+.progreso-texto { font-size: 14px; font-weight: bold; }
+.barra { height: 12px; background: #e1e8e3; border-radius: 6px; overflow: hidden; }
+.barra-relleno { height: 100%; background: var(--verde); width: 0%; transition: width 0.4s ease, background 0.4s ease; }
+
+/* TARJETAS DE ACTIVIDADES PRINCIPALES */
+.lista-tareas { display: grid; gap: 20px; }
+.tarjeta-actividad { background: white; border: 1px solid var(--borde); border-radius: 10px; overflow: hidden; transition: all .3s; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+.tarjeta-actividad.completada { border-color: #b7e3d3; background: #fcfdfc; }
+
+.actividad-header { padding: 20px; display: flex; align-items: flex-start; gap: 15px; cursor: pointer; user-select: none; background: white; transition: background 0.2s; border-bottom: 1px solid transparent; }
+.actividad-header:hover { background: #fafcfb; }
+.tarjeta-actividad.expandida .actividad-header { border-bottom-color: var(--borde); background: #fafcfb; }
+
+.check-maestro { width: 26px; height: 26px; border: 2px solid var(--gris); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; flex-shrink: 0; transition: all 0.2s; margin-top: 2px; }
+.tarjeta-actividad.completada .check-maestro { background: var(--verde); border-color: var(--verde); }
+
+.actividad-info { flex-grow: 1; min-width: 0; }
+.actividad-titulo { font-size: 18px; font-weight: bold; color: var(--texto); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* ETIQUETA DE FECHA */
+.actividad-fecha { 
+    font-size: 12px; 
+    background: #fff3cd; 
+    color: #856404; 
+    border: 1px solid #ffeeba;
+    padding: 3px 10px; 
+    border-radius: 999px; 
+    font-weight: bold; 
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+.actividad-fecha::before { content: "📅"; font-size: 11px; }
+
+.actividad-desc { font-size: 14px; color: var(--gris); word-break: break-word; }
+.flecha-expandir { color: var(--gris); font-size: 18px; transition: transform 0.3s; margin-left: 10px; }
+.tarjeta-actividad.expandida .flecha-expandir { transform: rotate(180deg); }
+
+/* CONTENIDO INTERNO (PASOS) */
+.actividad-contenido { display: none; padding: 20px; background: #fcfdfc; }
+.tarjeta-actividad.expandida .actividad-contenido { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* SUB-PASOS (To-Do internos) */
+.lista-subpasos { display: grid; gap: 12px; margin-bottom: 20px; }
+.subpaso-item { background: white; border: 1px solid var(--borde); border-radius: 8px; padding: 15px; display: flex; gap: 12px; align-items: flex-start; transition: all .2s; }
+.subpaso-item.hecho { background: var(--exito-bg); border-color: #b7e3d3; }
+
+.check-subpaso { width: 22px; height: 22px; border: 2px solid var(--gris); border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-top: 2px; transition: all .2s; color: white; font-size: 12px;}
+.subpaso-item.hecho .check-subpaso { background: var(--verde); border-color: var(--verde); }
+
+/* FIX PARA TEXTOS LARGOS Y URLS */
+.subpaso-contenido { flex-grow: 1; min-width: 0; }
+.subpaso-texto { font-weight: 600; font-size: 15px; margin-bottom: 6px; transition: color 0.2s; word-break: break-word; overflow-wrap: break-word; }
+.subpaso-item.hecho .subpaso-texto { color: var(--gris); text-decoration: line-through; }
+
+/* RUTAS VISUALES (Migajas de pan) */
+.ruta-visual { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; margin-bottom: 10px; }
+.ruta-paso { background: #eef2f0; padding: 8px 14px; border-radius: 6px; font-weight: bold; color: var(--verde-oscuro); font-size: 13px; border: 1px solid #d0dbd5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.ruta-flecha { color: var(--gris); font-weight: bold; font-size: 16px; }
+
+/* RECUADROS DE NOTA (Blancos) */
+.nota-blanca { background: #fff; border: 1px solid #dcdcdc; padding: 12px 15px; border-radius: 6px; font-size: 14px; margin-top: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); border-left: 4px solid var(--verde); line-height: 1.5; word-break: break-word; overflow-wrap: break-word; }
+.nota-blanca strong { color: var(--verde-oscuro); }
+
+/* RECURSOS DENTRO DEL SUB-PASO */
+.recursos-wrapper { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.recurso-bloque { background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 6px; font-size: 13px; word-break: break-word; overflow-wrap: break-word; }
+.recurso-bloque a { color: var(--verde-oscuro); font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; word-break: break-all; }
+.recurso-bloque a:hover { text-decoration: underline; }
+.caja-copiar { background: #fff; border: 1px dashed #b8c4bd; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; margin-top: 8px; white-space: pre-wrap; max-height: 150px; overflow-y: auto; word-break: break-all;}
+.btn-copiar-mini { background: #4a5a52; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 8px; font-weight: bold;}
+.btn-copiar-mini:hover { background: #364640; }
+
+/* ACORDEÓN DE DESCRIPCIONES */
+details.acordeon-desc { border: 1px solid #dcdcdc; border-radius: 6px; background: white; margin-bottom: 8px; overflow: hidden; }
+details.acordeon-desc summary { background: #f4f6f9; padding: 10px 12px; font-weight: bold; color: var(--verde-oscuro); cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center;}
+details.acordeon-desc summary::-webkit-details-marker { display: none; }
+details.acordeon-desc summary::after { content: "▼"; font-size: 12px; color: var(--gris); transition: transform 0.2s; }
+details.acordeon-desc[open] summary::after { transform: rotate(180deg); }
+.desc-contenido { padding: 12px; border-top: 1px solid #eee; }
+
+/* MENSAJES DE ESTADO DE ACTIVIDAD */
+.msg-actividad-completada { background: var(--exito-bg); border: 1px solid #b7e3d3; padding: 15px; border-radius: 8px; color: var(--verde-oscuro); text-align: center; font-weight: bold; margin-top: 20px; }
+.msg-actividad-pendiente { background: var(--ambar-bg); border: 1px solid #ead49b; padding: 15px; border-radius: 8px; color: var(--ambar-osc); text-align: center; font-weight: bold; margin-top: 20px; }
+
+/* SECCIÓN FINAL REPORTE */
+.reporte-section { margin-top: 40px; background: white; border: 1px solid var(--borde); border-radius: 10px; padding: 25px; border-top: 4px solid var(--verde); text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+.reporte-section h3 { color: var(--verde-oscuro); margin-bottom: 8px; }
+.reporte-section p { color: var(--gris); font-size: 14px; margin-bottom: 15px; }
+.boton-grande { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--verde-oscuro); color: white; border: none; padding: 14px 24px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: .2s; width: 100%; max-width: 400px; }
+.boton-grande:hover { background: #003626; }
+
+.mensaje-estado { padding: 12px; border-radius: 6px; font-size: 14px; margin-top: 15px; display: none; font-weight: bold;}
+.mensaje-estado.exito { display: block; background: #e7f4ee; color: var(--verde-oscuro); border: 1px solid #b7e3d3; }
+
+@media (max-width: 600px) {
+    .actividad-header { padding: 15px; }
+    .actividad-contenido { padding: 15px; }
+    .subpaso-item { padding: 12px; }
+    .ruta-visual { flex-direction: column; align-items: flex-start; gap: 4px;}
+    .ruta-flecha { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <div class="institucion">UNIVERSIDAD AUTÓNOMA DEL ESTADO DE MÉXICO · FACULTAD DE INGENIERÍA</div>
+        <h1>Tablero de Actividades Tutoriales</h1>
+        <p>Cierre de semestre 2026B</p>
+    </div>
+</header>
+
+<main>
+
+    <div class="barra-progreso-wrapper">
+        <div class="progreso-header">
+            <span class="progreso-titulo">Avance Global de Actividades</span>
+            <span class="progreso-texto" id="txtProgreso">0 de 6 completadas</span>
+        </div>
+        <div class="barra">
+            <div class="barra-relleno" id="barraRelleno"></div>
+        </div>
+    </div>
+
+    <div class="lista-tareas" id="contenedorTareas"></div>
+
+    <div class="reporte-section">
+        <h3>📋 Copiar reporte de avance</h3>
+        <p>Al terminar de revisar, copie el resumen de sus actividades y sub-actividades pendientes para guardarlo en su equipo o enviarlo.</p>
+        <button class="boton-grande" onclick="generarReporte()">📋 Copiar reporte al portapapeles</button>
+        <div id="msgReporte" class="mensaje-estado"></div>
+    </div>
+
+</main>
+
+<script>
+/* =====================================================================
+   BASE DE DATOS DE ACTIVIDADES
+   ===================================================================== */
+const actividades = [
+    {
+        id: "act_1",
+        titulo: "Agenda en SiTAA v2",
+        fecha: "hasta el 27 de noviembre",
+        descripcion: "Agendar las 11 actividades virtuales y seleccionar a todos sus tutorados.",
+        pasos: [
+            {
+                id: "p1_1",
+                texto: "Ingrese al SITAA V2 con sus credenciales institucionales.",
+                hecho: false,
+                recursos: [
+                    { tipo: "link", texto: "Abrir SITAA V2", url: "https://sitav2.uaemex.mx/login" }
+                ]
+            },
+            {
+                id: "p1_2",
+                texto: "Registre sus horarios de atención tutorial en el apartado correspondiente:",
+                hecho: false,
+                recursos: [
+                    { 
+                        tipo: "ruta", 
+                        pasos: ["Menú", "Perfil", "Registro de horario para tutorías", "Llene las tarjetas de horarios"] 
+                    }
+                ]
+            },
+            {
+                id: "p1_3",
+                texto: "Ingrese al módulo de gestión de tutorías y seleccione 'Agendar':",
+                hecho: false,
+                recursos: [
+                    { 
+                        tipo: "ruta", 
+                        pasos: ["Menú", "Gestión de Tutorías", "Lista de tutorías", "Agendar"] 
+                    }
+                ]
+            },
+            {
+                id: "p1_4",
+                texto: "Seleccione el Programa Educativo correspondiente.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p1_5",
+                texto: "Seleccione a todas y cada una de las personas tutoradas de la lista desplegable (marcando su checkbox uno por uno).",
+                hecho: false,
+                recursos: [
+                    { tipo: "nota", contenido: "Es indispensable seleccionar a <b>todos</b> sus tutorados registrados." }
+                ]
+            },
+            {
+                id: "p1_6",
+                texto: "Seleccione el modo de actividad: A distancia.",
+                hecho: false,
+                recursos: [
+                    { tipo: "nota", contenido: "<strong>Regla de Modalidad:</strong> Al elegir 'A distancia' es posible agendar una sesión para el mismo día y se dispone de más opciones de horario." }
+                ]
+            },
+            {
+                id: "p1_7",
+                texto: "Seleccione la fecha y los horarios disponibles.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p1_8",
+                texto: "Seleccione el factor y la actividad de acuerdo con el Plan de Trabajo registrado.",
+                hecho: false,
+                recursos: [
+                    { tipo: "nota", contenido: "<strong>Nota:</strong> Elija los códigos ya acordados del Plan de Trabajo: <b>1.4.1.2, 1.4.1.3, 1.4.1.4, 1.4.2.1, 1.4.2.2, 1.4.3.1, 1.4.3.2, 1.4.3.3, 1.4.4.1, 1.4.4.2, 1.4.4.3</b>." }
+                ]
+            },
+            {
+                id: "p1_9",
+                texto: "Copie y pegue la descripción de 225 caracteres en el campo 'Descripción' de cada actividad.",
+                hecho: false,
+                recursos: [
+                    {
+                        tipo: "descripciones",
+                        datos: [
+                            { codigo: "1.4.1.2", texto: "1.4.1.2: Participa en la Jornada de Tutoría 2026B o realiza alguna de las actividades propuestas para fortalecer la organización del tiempo y el aprendizaje." },
+                            { codigo: "1.4.1.3", texto: "1.4.1.3: Consulta el planificador académico y utilízalo para reflexionar sobre tus hábitos de estudio: https://planificador-academico-fi-coordinac-amber.vercel.app/administrador" },
+                            { codigo: "1.4.1.4", texto: "1.4.1.4: Contesta el formulario de evidencia de tutoría académica, relacionado con la visualización de videos e infografías: https://forms.gle/aebuLf11KH5TK3Sa7" },
+                            { codigo: "1.4.2.1", texto: "1.4.2.1: Consulta el planificador académico y revisa tu organización del tiempo: https://planificador-academico-fi-coordinac-amber.vercel.app/administrador" },
+                            { codigo: "1.4.2.2", texto: "1.4.2.2: Elige alguna conferencia de la Jornada de Tutoría 2026B que contribuya a fortalecer tus habilidades de empleabilidad." },
+                            { codigo: "1.4.3.1", texto: "1.4.3.1: Responde los cuestionarios relacionados con estilo de aprendizaje y actitud ante el cambio." },
+                            { codigo: "1.4.3.2", texto: "1.4.3.2: Consulta el planificador académico y revisa tu propuesta de inscripción https://planificador-academico-fi-coordinac-amber.vercel.app/administrador" },
+                            { codigo: "1.4.3.3", texto: "1.4.3.3: Consulta el planificador académico y revisa tu propuesta de inscripción https://planificador-academico-fi-coordinac-amber.vercel.app/administrador" },
+                            { codigo: "1.4.4.1", texto: "1.4.4.1: Revisa tu condición académica: https://coordinaciontutoriaacademicafi.github.io/Consulta_Condicion_Academica_FIUAEMex/" },
+                            { codigo: "1.4.4.2", texto: "1.4.4.2: Participa en la Jornada de Tutoría 2026B o realiza alguna de las actividades propuestas para conocer la normatividad universitaria." },
+                            { codigo: "1.4.4.3", texto: "1.4.4.3: Participa en la Jornada de Tutoría 2026B o realiza alguna de las actividades propuestas para conocer áreas de apoyo institucional." }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "p1_10",
+                texto: "Guarde y confirme la programación en el sistema.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p1_11",
+                texto: "Haga clic en el botón de Ver de la actividad recién agendada.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p1_12",
+                texto: "Copie el siguiente enlace de OneDrive:",
+                hecho: false,
+                recursos: [
+                    { 
+                        tipo: "copiar", 
+                        texto: "Copiar enlace de OneDrive", 
+                        contenido: "https://alumnouaemex-my.sharepoint.com/:f:/g/personal/tutoria_fi_uaemex_mx/IgAqHY2HRAxCSqJPNyL73deQAVCQlw50yAm8WsDJTB5UcvI?e=cvhfJk&xsdata=MDV8MDJ8fDFlOWQzMGRhMDhjYTQ2NjVkYzEzMDhkZjRhNGE2ZTlhfGE5ZTE3ZjllOTBiZTQxZDA4NGViNmE0OGViZTlmZWMwfDB8MHw2MzkzMTEzNTU2NTM1Nzc3NDd8VW5rbm93bnxWR1ZoYlhOVFpXTjFjbWwwZVZObGNuWnBZMlY4ZXlKRFFTSTZJbFJsWVcxelgwRlVVRk5sY25acFkyVmZVMUJQVEU5R0lpd2lWaUk2SWpBdU1DNHdNREF3SWl3aVVDSTZJbGRwYmpNeUlpd2lRVTRpT2lKUGRHaGxjaUlzSWxkVUlqb3hNWDA9fDF8TDJOb1lYUnpMekU1T2pSaU16Y3lObVl4TnpSbVpEUTRPR0U1WWprek56ZG1Nak0wTlRFNE5UQmtRSFJvY21WaFpDNTJNaTl0WlhOellXZGxjeTh4TnprMU5UTTROell6TXpBNXxmMmQ3MzAwNjQ0MDk0OGYwZGMxMzA4ZGY0YTRhNmU5YXwzZjhjMWY1NzViMTM0MzdkOGY1NzBkYzI3OTY5YzdhOA%3D%3D&sdata=aG1wbW1QZkpTM2NBUGtpdXl0ZFFJWWZLSWJCSGJNRzA0Z0FxTFNSYVZoaz0%3D&ovuser=a9e17f9e-90be-41d0-84eb-6a48ebe9fec0%2Ctutoria_fi%40uaemex.mx" 
+                    }
+                ]
+            },
+            {
+                id: "p1_13",
+                texto: "Pegue el enlace en el espacio en blanco de la ventana emergente que aparece.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p1_14",
+                texto: "Guarde los cambios.",
+                hecho: false,
+                recursos: []
+            }
+        ]
+    },
+    {
+        id: "act_2",
+        titulo: "Firmas en listas versión 4",
+        fecha: "hasta el 27 de noviembre",
+        descripcion: "Convoque a sus tutorados a firmar las listas. Meta: mínimo 10 atenciones.",
+        pasos: [
+            {
+                id: "p2_1",
+                texto: "Descargue el formato oficial de la lista.",
+                hecho: false,
+                recursos: [
+                    { tipo: "link", texto: "Descargar Lista de Participantes V4", url: "https://alumnouaemex-my.sharepoint.com/:w:/g/personal/tutoria_fi_uaemex_mx/cQqoqZM_4_5QQ7574xhRUbDIEgUDwCIMvuTW1NubcqqB2m67tg" }
+                ]
+            },
+            {
+                id: "p2_2",
+                texto: "Imprima el formato 11 veces (una por cada actividad).",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p2_3",
+                texto: "Llene los datos del encabezado en cada hoja.",
+                hecho: false,
+                recursos: [
+                    { 
+                        tipo: "nota", 
+                        contenido: "<strong>Instrucciones para el encabezado:</strong><br>• <b>Nombre del tutor(a):</b> Escriba su nombre completo.<br>• <b>Número de factor PROED:</b> Escriba solo los tres primeros números (ej. 1.4.1 o 1.4.2).<br>• <b>Fecha:</b> Escriba 'Noviembre 2026' o '2026B'.<br>• <b>Duración en minutos:</b> Anote '60'.<br>• <b>Actividad PROED:</b> Escriba el último número del código (1, 2, 3 o 4)." 
+                    }
+                ]
+            },
+            {
+                id: "p2_4",
+                texto: "Anote la Descripción PROED en cada hoja (sin escribir el código, solo el texto).",
+                hecho: false,
+                recursos: [
+                    {
+                        tipo: "descripciones",
+                        datos: [
+                            { codigo: "1.4.1.2", texto: "Participación en la Jornada de Tutoría 2026B y actividades propuestas para fortalecer la organización del tiempo y el aprendizaje." },
+                            { codigo: "1.4.1.3", texto: "Consultar el planificador académico y utilízalo para reflexionar sobre tus hábitos de estudio: https://planificador-academico-fi-coordinac-amber.vercel.app/administrador" },
+                            { codigo: "1.4.1.4", texto: "Contestar el formulario de evidencia de tutoría académica, relacionado con la visualización de videos e infografías: https://forms.gle/aebuLf11KH5TK3Sa7" },
+                            { codigo: "1.4.2.1", texto: "Consultar el planificador académico y revisar tu organización del tiempo: https://planificador-academico-fi-coordinac-amber.vercel.app/administrador" },
+                            { codigo: "1.4.2.2", texto: "Elegir alguna conferencia de la Jornada de Tutoría 2026B que contribuya a fortalecer tus habilidades de empleabilidad." },
+                            { codigo: "1.4.3.1", texto: "Responder los cuestionarios relacionados con estilo de aprendizaje y actitud ante el cambio." },
+                            { codigo: "1.4.3.2", texto: "Consultar el planificador académico y revisa tu propuesta de inscripción https://planificador-academico-fi-coordinac-amber.vercel.app/administrador" },
+                            { codigo: "1.4.3.3", texto: "Consultar el planificador académico y revisa tu propuesta de inscripción https://planificador-academico-fi-coordinac-amber.vercel.app/administrador" },
+                            { codigo: "1.4.4.1", texto: "Revisar la condición académica: https://coordinaciontutoriaacademicafi.github.io/Consulta_Condicion_Academica_FIUAEMex/" },
+                            { codigo: "1.4.4.2", texto: "Participar en la Jornada de Tutoría 2026B o realizar alguna de las actividades propuestas para conocer la normatividad universitaria." },
+                            { codigo: "1.4.4.3", texto: "Participar en la Jornada de Tutoría 2026B o realizar alguna de las actividades propuestas para conocer áreas de apoyo institucional." }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "p2_5",
+                texto: "Recaude las firmas autógrafas de las personas tutoradas (con datos completos).",
+                hecho: false,
+                recursos: [
+                    { tipo: "nota", contenido: "<strong>⚠️ Regla de validación:</strong> Las listas de las actividades <b>1.4.2.1, 1.4.2.2, 1.4.3.1, 1.4.3.2 y 1.4.3.3</b> deben tener un mínimo de <b>10 registros</b>. De lo contrario, no se podrán validar para el puntaje PROED." }
+                ]
+            },
+            {
+                id: "p2_6",
+                texto: "Lleve las listas a sellar a la Coordinación de Tutoría.",
+                hecho: false,
+                recursos: [
+                    { tipo: "nota", contenido: "Las listas deben llevar el sello oficial de la Coordinación. Pueden pasar en un horario de <b>9:00 a 12:00 hrs, de lunes a viernes</b>.<br><br>Nota: El único formato válido será el de la versión 4." }
+                ]
+            }
+        ]
+    },
+    {
+        id: "act_3",
+        titulo: "Guardar las listas en OneDrive",
+        fecha: "hasta el 11 de diciembre",
+        descripcion: "Suba las listas firmadas, selladas y escaneadas en formato PDF a su carpeta en la nube.",
+        pasos: [
+            {
+                id: "p3_1",
+                texto: "Escanee las listas que ya cuentan con las firmas y el sello de la Coordinación.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p3_2",
+                texto: "Asegúrese de que los archivos escaneados estén guardados en formato PDF.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p3_3",
+                texto: "Ingrese a OneDrive y busque su carpeta correspondiente (identificada con su programa educativo y nombre completo, por ejemplo: ICI Juan Pérez o ICO María López).",
+                hecho: false,
+                recursos: [
+                    { tipo: "link", texto: "Abrir OneDrive de la Coordinación", url: "https://alumnouaemex-my.sharepoint.com/:f:/g/personal/tutoria_fi_uaemex_mx/IgAqHY2HRAxCSqJPNyL73deQAVCQlw50yAm8WsDJTB5UcvI?e=cvhfJk&xsdata=MDV8MDJ8fDFlOWQzMGRhMDhjYTQ2NjVkYzEzMDhkZjRhNGE2ZTlhfGE5ZTE3ZjllOTBiZTQxZDA4NGViNmE0OGViZTlmZWMwfDB8MHw2MzkzMTEzNTU2NTM1Nzc3NDd8VW5rbm93bnxWR1ZoYlhOVFpXTjFjbWwwZVZObGNuWnBZMlY4ZXlKRFFTSTZJbFJsWVcxelgwRlVVRk5sY25acFkyVmZVMUJQVEU5R0lpd2lWaUk2SWpBdU1DNHdNREF3SWl3aVVDSTZJbGRwYmpNeUlpd2lRVTRpT2lKUGRHaGxjaUlzSWxkVUlqb3hNWDA9fDF8TDJOb1lYUnpMekU1T2pSaU16Y3lObVl4TnpSbVpEUTRPR0U1WWprek56ZG1Nak0wTlRFNE5UQmtRSFJvY21WaFpDNTJNaTl0WlhOellXZGxjeTh4TnprMU5UTTROell6TXpBNXxmMmQ3MzAwNjQ0MDk0OGYwZGMxMzA4ZGY0YTRhNmU5YXwzZjhjMWY1NzViMTM0MzdkOGY1NzBkYzI3OTY5YzdhOA%3D%3D&sdata=aG1wbW1QZkpTM2NBUGtpdXl0ZFFJWWZLSWJCSGJNRzA0Z0FxTFNSYVZoaz0%3D&ovuser=a9e17f9e-90be-41d0-84eb-6a48ebe9fec0%2Ctutoria_fi%40uaemex.mx" }
+                ]
+            },
+            {
+                id: "p3_4",
+                texto: "Suba los archivos PDF dentro de su carpeta correspondiente.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p3_5",
+                texto: "Nombre cada archivo subido con el código de la actividad correspondiente.",
+                hecho: false,
+                recursos: [
+                    { tipo: "nota", contenido: "<strong>Nomenclatura para mantener un orden:</strong> Escriba el nombre del archivo únicamente con los códigos ya establecidos (por ejemplo: <b>1.4.1.2.pdf</b>, <b>1.4.2.1.pdf</b>, etc.)." }
+                ]
+            }
+        ]
+    },
+    {
+        id: "act_4",
+        titulo: "Difundir páginas web con personas tutoradas y alumnos / alumnas de clase",
+        fecha: "Difusión continua",
+        descripcion: "Comparta los enlaces de los formularios y de la condición académica. Esta acción corresponde a la estrategia de apoyo colaborativo y es importante compartirlo con nuestros alumnos, alumnas de clase y personas tutoradas.",
+        pasos: [
+            {
+                id: "p4_1",
+                texto: "Copie y personalice el mensaje estándar para enviarlo por Teams o correo.",
+                hecho: false,
+                recursos: [
+                    { 
+                        tipo: "copiar", 
+                        texto: "Copiar mensaje estándar", 
+                        contenido: "Asunto: Cierre del semestre 2026B: formularios y páginas web\n\nHola:\nSoy tu tutor / tutora / profesor / profesora. Estamos en el cierre del semestre 2026B y necesito tu apoyo con dos actividades breves.\n\nQué debes hacer\nDirectorio de Formularios de Tutoría\nIngresa y contesta los 9 formularios, así como las acciones que se indican.\nhttps://coordinaciontutoriaacademicafi.github.io/Formularios_Actividades_Tutoriales/\nCondición académica\nIngresa tu número de cuenta de siete dígitos, consulta tu condición y sigue las acciones que se te indican.\nhttps://coordinaciontutoriaacademicafi.github.io/Consulta_Condicion_Academica_FIUAEMex/\n\nEs importante que conozcas tu condición académica y en este momento puedas tomar decisiones que te ayuden a evitar complicaciones mayores. Especialmente en este cierre de semestre. Además la información que nos proporciones en los cuestionarios de tutoría, permitirá generar estrategias de apoyo académico cada vez más cercanas a las necesidades reales de ustedes como personas estudiantes de ingeniería. \n\nFecha límite: 4 de diciembre de 2026\n\nSi ya lo hiciste, gracias. Si tienes dudas o necesitas orientación, escríbeme por este mismo medio y con gusto te apoyo.\n\nSaludos,\n[Nombre del tutor o tutora]" 
+                    },
+                    { tipo: "nota", contenido: "<strong>Nota:</strong> Puede editar este mensaje como lo considere conveniente antes de enviarlo." }
+                ]
+            },
+            {
+                id: "p4_2",
+                texto: "Envíe el mensaje a sus tutorados y alumnos de clase por los canales correspondientes.",
+                hecho: false,
+                recursos: []
+            }
+        ]
+    },
+    {
+        id: "act_5",
+        titulo: "Seguimiento a tutorados (Formularios)",
+        fecha: "Cierre",
+        descripcion: "Verifique quiénes han respondido los formularios y envíe mensajes de seguimiento por Teams a quienes tengan pendientes.",
+        pasos: [
+            {
+                id: "p5_1",
+                texto: "Ingrese al directorio de Formularios de Tutoría.",
+                hecho: false,
+                recursos: [
+                    { tipo: "link", texto: "Abrir Formularios de Tutoría", url: "https://coordinaciontutoriaacademicafi.github.io/Formularios_Actividades_Tutoriales/" }
+                ]
+            },
+            {
+                id: "p5_2",
+                texto: "Seleccione el botón «Acceso tutores / tutoras» e ingrese su RFC.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p5_3",
+                texto: "Utilice los filtros disponibles en la tabla (Han cumplido / No han contestado) para localizar a sus tutorados.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p5_4",
+                texto: "Identifique a las personas tutoradas que NO han llenado el total de formularios.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p5_5",
+                texto: "Presione el botón «Abrir chat personal de Teams». Se abrirá su chat personal en una nueva pestaña.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p5_6",
+                texto: "Regrese a la página y localice en la lista el mensaje de la persona tutorada a quien desea contactar.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p5_7",
+                texto: "Presione «Copiar mensaje» para copiarlo al portapapeles.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p5_8",
+                texto: "En Teams, busque a la persona tutorada por su nombre, abra su chat y pegue el mensaje con Ctrl+V (Windows) o Cmd+V (Mac). Envíelo.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p5_9",
+                texto: "Repita el procedimiento para cada persona tutorada con formularios pendientes.",
+                hecho: false,
+                recursos: [
+                    { tipo: "nota", contenido: "<strong>Consideración final:</strong> Las personas tutoradas que respondieron los formularios pueden proporcionar su firma para las actividades: <b>1.4.1.2, 1.4.1.3, 1.4.2.1, 1.4.4.1, 1.4.4.2 y 1.4.4.3</b>.<br><br>Este procedimiento permite identificar a quienes han cumplido con las actividades y facilitar la solicitud de firmas para los formatos de evidencia." }
+                ]
+            }
+        ]
+    },
+    {
+        id: "act_6",
+        titulo: "Revisar firmas según Planificador Académico",
+        fecha: "Cierre",
+        descripcion: "Identifique a las personas tutoradas que completaron el Planificador para solicitar sus firmas en las listas de evidencia.",
+        pasos: [
+            {
+                id: "p6_1",
+                texto: "Ingrese al Planificador de Carga Académica.",
+                hecho: false,
+                recursos: [
+                    { tipo: "link", texto: "Abrir Planificador Académico", url: "https://planificador-academico-fi-coordinac-amber.vercel.app/tutor" }
+                ]
+            },
+            {
+                id: "p6_2",
+                texto: "Utilice su correo institucional como usuario.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p6_3",
+                texto: "Ingrese la contraseña: tutor123 (es la misma para todos los tutores y tutoras).",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p6_4",
+                texto: "Consulte el registro de las personas tutoradas que completaron el planificador.",
+                hecho: false,
+                recursos: []
+            },
+            {
+                id: "p6_5",
+                texto: "Identifique a las personas tutoradas que podrán firmar.",
+                hecho: false,
+                recursos: [
+                    { tipo: "nota", contenido: "<strong>Consideración final:</strong> Las personas tutoradas que completaron el planificador pueden proporcionar su firma para las siguientes actividades: <b>1.4.1.3, 1.4.2.1, 1.4.3.1, 1.4.3.2, 1.4.3.3 y 1.4.4.3</b>.<br><br>Este procedimiento permite identificar a quienes han cumplido con las actividades y facilitar la solicitud de firmas para los formatos de evidencia." }
+                ]
+            },
+            {
+                id: "p6_6",
+                texto: "Copie y personalice el mensaje estándar para convocar a las personas tutoradas a firmar sus listas.",
+                hecho: false,
+                recursos: [
+                    { 
+                        tipo: "copiar", 
+                        texto: "Copiar mensaje de convocatoria a firmar", 
+                        contenido: "Asunto: Convocatoria para firmar listas de tutoría 2026B\n\nEstimado(a) [Nombre del tutorado(a)]:\n\nReciba un cordial saludo. Como parte del cierre del semestre 2026B, le informo que, al haber completado el Planificador de Carga Académica, tiene la oportunidad de firmar las listas de evidencia correspondientes a las siguientes actividades:\n\n• 1.4.1.3\n• 1.4.2.1\n• 1.4.3.1\n• 1.4.3.2\n• 1.4.3.3\n• 1.4.4.3\n\nLe solicito amablemente pasar a firmar sus formatos en [Lugar] en un horario de [Horario de atención]. Es indispensable que su firma sea autógrafa.\n\nSi tiene alguna duda o requiere mayor información, no dude en contactarme por este mismo medio.\n\nAtentamente,\n[Nombre del tutor o tutora]" 
+                    },
+                    { tipo: "nota", contenido: "<strong>Nota:</strong> Recuerde modificar los datos entre corchetes (Lugar, Horario y Nombre) antes de enviarlo." }
+                ]
+            }
+        ]
+    }
+];
+
+// =====================================================================
+// LÓGICA DE LA PÁGINA
+// =====================================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+    renderizarTareas();
+});
+
+function isActividadCompleta(act) {
+    if (act.pasos.length === 0) return false;
+    return act.pasos.every(paso => paso.hecho === true);
+}
+
+function renderizarTareas() {
+    const contenedor = document.getElementById("contenedorTareas");
+    contenedor.innerHTML = "";
+
+    actividades.forEach(act => {
+        const completa = isActividadCompleta(act);
+
+        const card = document.createElement("div");
+        card.className = "tarjeta-actividad" + (completa ? " completada" : "");
+        card.id = "card_" + act.id;
+
+        const header = document.createElement("div");
+        header.className = "actividad-header";
+        header.onclick = () => toggleExpandir(act.id);
+
+        const checkMaestro = document.createElement("div");
+        checkMaestro.className = "check-maestro";
+        checkMaestro.innerHTML = completa ? "✓" : "";
+
+        const info = document.createElement("div");
+        info.className = "actividad-info";
+        
+        const titulo = document.createElement("div");
+        titulo.className = "actividad-titulo";
+        titulo.innerHTML = act.titulo + ` <span class="actividad-fecha">${act.fecha}</span>`;
+        
+        const desc = document.createElement("div");
+        desc.className = "actividad-desc";
+        desc.textContent = act.descripcion;
+
+        const flecha = document.createElement("div");
+        flecha.className = "flecha-expandir";
+        flecha.innerHTML = "▼";
+
+        info.appendChild(titulo);
+        info.appendChild(desc);
+        header.appendChild(checkMaestro);
+        header.appendChild(info);
+        header.appendChild(flecha);
+
+        const contenido = document.createElement("div");
+        contenido.className = "actividad-contenido";
+
+        const listaSubpasos = document.createElement("div");
+        listaSubpasos.className = "lista-subpasos";
+
+        act.pasos.forEach(paso => {
+            const item = document.createElement("div");
+            item.className = "subpaso-item" + (paso.hecho ? " hecho" : "");
+
+            const checkSub = document.createElement("div");
+            checkSub.className = "check-subpaso";
+            checkSub.innerHTML = paso.hecho ? "✓" : "";
+            checkSub.onclick = () => togglePaso(act.id, paso.id);
+
+            const subContenido = document.createElement("div");
+            subContenido.className = "subpaso-contenido";
+
+            const txt = document.createElement("div");
+            txt.className = "subpaso-texto";
+            txt.textContent = paso.texto;
+            subContenido.appendChild(txt);
+
+            if (paso.recursos && paso.recursos.length > 0) {
+                const recursosWrapper = document.createElement("div");
+                recursosWrapper.className = "recursos-wrapper";
+
+                paso.recursos.forEach(rec => {
+                    const bloque = document.createElement("div");
+                    
+                    if (rec.tipo === "link") {
+                        bloque.className = "recurso-bloque";
+                        bloque.innerHTML = `<a href="${rec.url}" target="_blank">🔗 ${rec.texto}</a>`;
+                    } 
+                    else if (rec.tipo === "nota") {
+                        bloque.className = "nota-blanca";
+                        bloque.innerHTML = rec.contenido;
+                    }
+                    else if (rec.tipo === "ruta") {
+                        bloque.className = "ruta-visual";
+                        let rutaHtml = "";
+                        rec.pasos.forEach((p, index) => {
+                            rutaHtml += `<span class="ruta-paso">${p}</span>`;
+                            if (index < rec.pasos.length - 1) {
+                                rutaHtml += `<span class="ruta-flecha">→</span>`;
+                            }
+                        });
+                        bloque.innerHTML = rutaHtml;
+                    }
+                    else if (rec.tipo === "copiar") {
+                        bloque.className = "recurso-bloque";
+                        bloque.innerHTML = `
+                            <strong>${rec.texto}</strong>
+                            <div class="caja-copiar">${rec.contenido}</div>
+                            <button class="btn-copiar-mini" onclick="copiarTexto('${rec.contenido.replace(/'/g, "\\'").replace(/\n/g, "\\n")}', this)">📋 Copiar contenido</button>
+                        `;
+                    }
+                    else if (rec.tipo === "descripciones") {
+                        bloque.className = "recurso-bloque";
+                        let htmlDesc = `<strong style="display:block; margin-bottom:10px;">Descripciones (haga clic para abrir y copiar):</strong>`;
+                        
+                        rec.datos.forEach(d => {
+                            htmlDesc += `
+                            <details class="acordeon-desc">
+                                <summary>Código: ${d.codigo}</summary>
+                                <div class="desc-contenido">
+                                    <div class="caja-copiar">${d.texto}</div>
+                                    <button class="btn-copiar-mini" onclick="copiarTexto('${d.texto.replace(/'/g, "\\'")}', this)">📋 Copiar texto</button>
+                                </div>
+                            </details>`;
+                        });
+                        bloque.innerHTML = htmlDesc;
+                    }
+
+                    recursosWrapper.appendChild(bloque);
+                });
+                subContenido.appendChild(recursosWrapper);
+            }
+
+            item.appendChild(checkSub);
+            item.appendChild(subContenido);
+            listaSubpasos.appendChild(item);
+        });
+
+        contenido.appendChild(listaSubpasos);
+
+        if (completa) {
+            const msg = document.createElement("div");
+            msg.className = "msg-actividad-completada";
+            msg.innerHTML = "🎉 ¡Actividad completada! Gracias por su compromiso con la tutoría.";
+            contenido.appendChild(msg);
+        } else {
+            const msg = document.createElement("div");
+            msg.className = "msg-actividad-pendiente";
+            msg.innerHTML = "Faltan pasos por completar. Marque cada casilla a medida que los realice.";
+            contenido.appendChild(msg);
+        }
+
+        card.appendChild(header);
+        card.appendChild(contenido);
+        contenedor.appendChild(card);
+    });
+
+    actualizarProgresoGlobal();
+}
+
+function toggleExpandir(id) {
+    const card = document.getElementById("card_" + id);
+    if (card) card.classList.toggle("expandida");
+}
+
+function togglePaso(idAct, idPaso) {
+    const act = actividades.find(a => a.id === idAct);
+    if (!act) return;
+    const paso = act.pasos.find(p => p.id === idPaso);
+    if (!paso) return;
+
+    paso.hecho = !paso.hecho;
+    
+    renderizarTareas();
+    
+    const card = document.getElementById("card_" + idAct);
+    if (card) card.classList.add("expandida");
+}
+
+function actualizarProgresoGlobal() {
+    const total = actividades.length;
+    let completadas = 0;
+    actividades.forEach(act => { if (isActividadCompleta(act)) completadas++; });
+    
+    document.getElementById("txtProgreso").textContent = `${completadas} de ${total} actividades completadas`;
+    
+    const porcentaje = total === 0 ? 0 : (completadas / total) * 100;
+    const barra = document.getElementById("barraRelleno");
+    barra.style.width = porcentaje + "%";
+    
+    if (porcentaje === 100 && total > 0) barra.style.background = "#0a9b3a";
+    else barra.style.background = "var(--verde)";
+}
+
+function copiarTexto(texto, boton) {
+    const textoLimpio = texto.replace(/\\n/g, '\n');
+    
+    navigator.clipboard.writeText(textoLimpio).then(() => {
+        const original = boton.innerHTML;
+        boton.innerHTML = "✓ ¡Copiado!";
+        boton.style.background = "#0a9b3a";
+        setTimeout(() => {
+            boton.innerHTML = original;
+            boton.style.background = "#4a5a52";
+        }, 2500);
+    }).catch(() => { alert("Por favor, seleccione el texto y cópielo manualmente."); });
+}
+
+function generarReporte() {
+    const total = actividades.length;
+    let completadas = 0;
+    let pendientesTxt = "";
+
+    actividades.forEach(act => {
+        const activaCompleta = isActividadCompleta(act);
+        if (activaCompleta) {
+            completadas++;
+        } else {
+            pendientesTxt += `📌 ${act.titulo}\n`;
+            act.pasos.forEach(paso => {
+                if (!paso.hecho) {
+                    pendientesTxt += `   - ${paso.texto}\n`;
+                }
+            });
+            pendientesTxt += `\n`;
+        }
+    });
+    
+    const pendientes = total - completadas;
+    
+    let reporte = `📋 REPORTE DE AVANCE TUTORIAL - FI UAEMéx\n\n`;
+    reporte += `Fecha: ${new Date().toLocaleDateString('es-MX')}\n\n`;
+    reporte += `✅ Actividades completadas: ${completadas} de ${total}\n`;
+    
+    if (pendientes > 0) {
+        reporte += `\n🔴 DETALLE DE ACTIVIDADES Y PASOS PENDIENTES:\n\n${pendientesTxt}`;
+    } else {
+        reporte += `\n🎉 ¡Felicidades! Ha completado el 100% de las actividades.\n\n`;
+    }
+
+    navigator.clipboard.writeText(reporte).then(() => {
+        const msgBox = document.getElementById("msgReporte");
+        msgBox.className = "mensaje-estado exito";
+        msgBox.innerHTML = "✓ Reporte detallado copiado al portapapeles. Guárdelo en un documento seguro.";
+        
+        setTimeout(() => {
+            msgBox.className = "mensaje-estado";
+            msgBox.innerHTML = "";
+        }, 5000);
+        
+    }).catch(() => {
+        alert("No se pudo copiar automáticamente. Por favor, verifique los permisos de su navegador.");
+    });
+}
+</script>
+</body>
+</html>
