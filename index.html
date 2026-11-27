@@ -177,7 +177,7 @@ details.acordeon-desc[open] summary::after { transform: rotate(180deg); }
     <div class="barra-progreso-wrapper">
         <div class="progreso-header">
             <span class="progreso-titulo">Avance Global de Actividades</span>
-            <span class="progreso-texto" id="txtProgreso">0 de 6 completadas</span>
+            <span class="progreso-texto" id="txtProgreso">0 de 7 completadas</span>
         </div>
         <div class="barra">
             <div class="barra-relleno" id="barraRelleno"></div>
@@ -592,6 +592,71 @@ const actividades = [
                     },
                     { tipo: "nota", contenido: "<strong>Nota:</strong> Recuerde modificar los datos entre corchetes (Lugar, Horario y Nombre) antes de enviarlo." }
                 ]
+            }
+        ]
+    }
+        ,
+    {
+        id: "act_7",
+        titulo: "Act. 7: Enviar estrategias de estudio e IA (Cierre de semestre)",
+        fecha: "Cierre",
+        descripcion: "Comparta con sus tutorados el mensaje con estrategias de estudio, prompts de IA y recomendaciones para culminar el semestre satisfactoriamente.",
+        pasos: [
+            {
+                id: "p7_1",
+                texto: "Copie el mensaje de estrategias de estudio y prompts de IA.",
+                hecho: false,
+                recursos: [
+                    { 
+                        tipo: "copiar", 
+                        texto: "Copiar mensaje de estrategias", 
+                        contenido: `¿Exámenes cerca? ¡Prepárate con estrategias inteligentes! Semestre 2026B.
+
+Estimado(a) Tutorado (a):
+
+El semestre 2026B, está en su fase final. Es un momento clave para definir estrategias y organizar alternativas para evitar complicaciones académicas.
+
+Puedes consultar los horarios de mentorías y asesorías en el siguiente enlace:
+🔗 https://coordinaciontutoriaacademicafi.github.io/Consulta_horarios_asesoria_mentoria/
+
+10 prompts para estudiar mejor con IA:
+
+1. Actúa como asesor académico. Ayúdame a organizar un plan de estudio de 7 días para preparar mis exámenes. Tengo que estudiar [materias y temas], dispongo de [horas] al día y mis fechas de examen son [fechas]. Prioriza los temas más difíciles e incluye descansos.
+
+2. Organiza una sesión de estudio con técnica Pomodoro para aprender [tema]. Divide el trabajo en bloques de concentración y descansos. Indica qué debo hacer en cada bloque y cómo comprobar si aprendí.
+
+3. Comprender un tema difícil. Explícame [tema] desde cero, como si fuera mi primera vez estudiándolo. Utiliza ejemplos sencillos, analogías y aplicaciones relacionadas con la ingeniería. Al final, hazme 5 preguntas para comprobar mi comprensión.
+
+4. Practicar para un examen. Actúa como profesor de [materia]. Elabora un examen de práctica con 10 preguntas de dificultad progresiva sobre [temas]. No muestres las respuestas hasta que haya contestado. Después, califica mis respuestas y explica mis errores.
+
+5. Detectar qué necesito reforzar. Voy a responder algunas preguntas sobre [tema]. Evalúa mis respuestas, identifica qué conceptos no domino y diseña ejercicios específicos para reforzar mis áreas de oportunidad.
+
+6. Fortalecer conocimientos de cálculo. Diseña una sesión de repaso sobre [límites, derivadas, integrales o ecuaciones diferenciales]. Comienza con los conceptos fundamentales, continúa con ejercicios de dificultad progresiva y termina con un examen breve. No muestres las respuestas hasta que intente resolverlos.
+
+7. Comprender el procedimiento matemático. Resuelve este problema de [materia] paso a paso. Justifica cada operación matemática, explica por qué se utiliza cada fórmula y señala los errores más comunes que podría cometer un estudiante: [pegar problema].
+
+8. Comprender fórmulas y ecuaciones. Explícame el significado físico y matemático de cada variable de esta fórmula: [escribir fórmula]. Indica sus unidades, condiciones de aplicación, despejes posibles y plantea tres problemas donde pueda utilizarla.
+
+9. Practicar programación. Actúa como instructor de programación. Ayúdame a fortalecer mis conocimientos de [Python, C, C++, Java u otro lenguaje]. Propón ejercicios de lógica y programación de dificultad progresiva. No me des el código completo; proporciona pistas y revisa mis soluciones.
+
+10. Aprender mediante preguntas y respuestas. Conviértete en mi tutor de [materia]. Enséñame mediante preguntas guiadas: plantea un problema, espera mi respuesta, analiza mi razonamiento y ayúdame a descubrir cómo llegar a la solución. Aumenta gradualmente la dificultad.
+
+5 hacks para potenciar el cierre de semestre 2026B:
+
+1. Prioriza: Identifica las materias en riesgo y dedica más tiempo a las que requieren mayor atención.
+2. Estudia por bloques: Trabaja 40 minutos sin distracciones y descansa 10 minutos.
+3. Activa tu memoria: Cierra tus apuntes, explica lo aprendido y resuelve ejercicios sin consultar las respuestas.
+4. Aprende de tus errores: Repasa exámenes anteriores, identifica tus fallas y vuelve a resolver los ejercicios incorrectos.
+5. Duerme bien: Duerme de 7 a 9 horas, aliméntate adecuadamente y evita los desvelos antes de los exámenes.`
+                    },
+                    { tipo: "nota", contenido: "<strong>Nota:</strong> Puede editar el mensaje antes de enviarlo si lo considera necesario." }
+                ]
+            },
+            {
+                id: "p7_2",
+                texto: "Envíe el mensaje a cada una de las personas tutoradas para sensibilizarlos sobre la importancia de culminar el semestre exitosamente.",
+                hecho: false,
+                recursos: []
             }
         ]
     }
